@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Danh mục</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="mb-4">Danh mục</h1>
+      <div class="d-flex justify-content-between mb-3">
+        <div class="d-flex">
+          <select
+            id="statusFilter"
+            class="form-select me-2"
+            style="width: 200px"
+          >
+            <option value="Tất cả">Tất cả</option>
+            <option value="Đang hoạt động">Đang hoạt động</option>
+            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+          </select>
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control w-50"
+            placeholder="Tìm kiếm danh mục theo tên"
+          />
+        </div>
+        <button
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#addCategoryModal"
+        >
+          Thêm mới danh mục
+        </button>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Mã danh mục</th>
+            <th>Tên danh mục</th>
+            <th>Trạng thái</th>
+            <th>Chức năng</th>
+          </tr>
+        </thead>
+        <tbody id="categoryTable">
+          <!-- Danh mục sẽ được hiển thị tại đây -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal Thêm/Sửa danh mục -->
+    <div
+      class="modal fade"
+      id="addCategoryModal"
+      tabindex="-1"
+      aria-labelledby="addCategoryModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCategoryModalLabel">
+              Thêm mới danh mục
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="categoryForm">
+              <div class="mb-3">
+                <label for="categoryCode" class="form-label">Mã danh mục</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="categoryCode"
+                  placeholder="Nhập mã danh mục"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Mã danh mục không được để trống
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="categoryName" class="form-label"
+                  >Tên danh mục</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="categoryName"
+                  placeholder="Nhập tên danh mục"
+                  required
+                />
+                <div class="invalid-feedback">
+                  Tên danh mục không được để trống
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Trạng thái</label>
+                <div>
+                  <input
+                    type="radio"
+                    id="statusActive"
+                    name="categoryStatus"
+                    value="Đang hoạt động"
+                    checked
+                  />
+                  <label for="statusActive">Đang hoạt động</label>
+                  <input
+                    type="radio"
+                    id="statusInactive"
+                    name="categoryStatus"
+                    value="Ngừng hoạt động"
+                  />
+                  <label for="statusInactive">Ngừng hoạt động</label>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button
+                  type="button"
+                  class="btn btn-secondary me-2"
+                  data-bs-dismiss="modal"
+                >
+                  Hủy
+                </button>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      let categories = []; // Mảng lưu trữ danh mục
+      let editIndex = null; // Chỉ số danh mục đang được sửa
+
+      // Hàm hiển thị danh sách danh mục
+      function renderCategories() {
+        const categoryTable = document.getElementById("categoryTable");
+        const statusFilter = document.getElementById("statusFilter").value;
+        const searchInput = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+
+        categoryTable.innerHTML = ""; // Xóa nội dung cũ
+
+        categories
+          .filter((category) => {
+            // Lọc theo trạng thái
+            if (statusFilter !== "Tất cả" && category.status !== statusFilter) {
+              return false;
+            }
+            // Lọc theo từ khóa tìm kiếm
+            if (!category.name.toLowerCase().includes(searchInput)) {
+              return false;
+            }
+            return true;
+          })
+          .forEach((category, index) => {
+            const row = `
+              <tr>
+                <td>${category.code}</td>
+                <td>${category.name}</td>
+                <td>
+                  <span class="badge ${
+                    category.status === "Đang hoạt động"
+                      ? "bg-success"
+                      : "bg-danger"
+                  }">
+                    ${category.status}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-warning btn-sm" onclick="editCategory(${index})">Sửa</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteCategory(${index})">Xóa</button>
+                </td>
+              </tr>
+            `;
+            categoryTable.innerHTML += row;
+          });
+      }
+
+      // Hàm thêm hoặc sửa danh mục
+      document
+        .getElementById("categoryForm")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          const codeInput = document.getElementById("categoryCode");
+          const nameInput = document.getElementById("categoryName");
+          const status = document.querySelector(
+            'input[name="categoryStatus"]:checked'
+          ).value;
+
+          const code = codeInput.value.trim();
+          const name = nameInput.value.trim();
+
+          // Reset thông báo lỗi
+          codeInput.classList.remove("is-invalid");
+          nameInput.classList.remove("is-invalid");
+
+          // Validate dữ liệu
+          let isValid = true;
+
+          if (!code) {
+            codeInput.classList.add("is-invalid");
+            isValid = false;
+          }
+
+          if (!name) {
+            nameInput.classList.add("is-invalid");
+            isValid = false;
+          }
+
+          if (!isValid) {
+            return; // Dừng lại nếu dữ liệu không hợp lệ
+          }
+
+          if (editIndex !== null) {
+            // Sửa danh mục
+            categories[editIndex] = { code, name, status };
+            editIndex = null; // Reset trạng thái sửa
+          } else {
+            // Thêm mới danh mục
+            categories.push({ code, name, status });
+          }
+
+          renderCategories();
+
+          // Reset form và đóng modal
+          e.target.reset();
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("addCategoryModal")
+          );
+          modal.hide();
+        });
+
+      // Hàm sửa danh mục
+      function editCategory(index) {
+        const category = categories[index];
+        editIndex = index; // Lưu chỉ số danh mục đang sửa
+
+        // Điền thông tin danh mục vào form
+        document.getElementById("categoryCode").value = category.code;
+        document.getElementById("categoryName").value = category.name;
+        document.querySelector(
+          `input[name="categoryStatus"][value="${category.status}"]`
+        ).checked = true;
+
+        // Hiển thị modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("addCategoryModal")
+        );
+        modal.show();
+      }
+
+      // Hàm xóa danh mục
+      function deleteCategory(index) {
+        if (confirm("Bạn có chắc chắn muốn xóa danh mục này không?")) {
+          categories.splice(index, 1);
+          renderCategories();
+        }
+      }
+
+      // Lắng nghe sự kiện thay đổi trạng thái lọc
+      document
+        .getElementById("statusFilter")
+        .addEventListener("change", renderCategories);
+
+      // Lắng nghe sự kiện tìm kiếm
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", renderCategories);
+    </script>
+  </body>
+</html>
